@@ -1,11 +1,16 @@
 import pandas as pd
 import re
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 import matplotlib.pyplot as plt
+import threading
+import logging
 
 # Regular expression for parsing logs (assuming common access log format)
 log_format = r'(?P<ip>\d+\.\d+\.\d+\.\d+) - - \[(?P<timestamp>[^\]]+)\] "(?P<action>[^"]+)" (?P<status>\d+)'
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 class LogAnalyzer:
     def __init__(self):
@@ -21,9 +26,10 @@ class LogAnalyzer:
                     if match:
                         logs.append(match.groupdict())
             self.data = pd.DataFrame(logs)
+            logging.info(f"Successfully parsed {len(logs)} log entries from {file_path}.")
             return True
         except Exception as e:
-            print(f"Error parsing log file: {e}")
+            logging.error(f"Error parsing log file: {e}")
             return False
 
     def detect_failed_logins(self):
@@ -42,9 +48,10 @@ class LogAnalyzer:
         try:
             suspicious_activities = pd.concat([self.detect_failed_logins(), self.detect_multiple_access_attempts()]).drop_duplicates()
             suspicious_activities.to_csv(filename, index=False)
+            logging.info(f"Suspicious activity report generated: {filename}")
             return filename
         except Exception as e:
-            print(f"Error generating report: {e}")
+            logging.error(f"Error generating report: {e}")
             return None
 
     def visualize_requests(self):
@@ -60,7 +67,7 @@ class LogAnalyzerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Log Analyzer Tool")
-        self.root.geometry("500x400")
+        self.root.geometry("600x500")
         
         # Log Analyzer instance
         self.analyzer = LogAnalyzer()
@@ -70,19 +77,19 @@ class LogAnalyzerGUI:
 
     def create_widgets(self):
         """ Create the UI components """
-        self.label = tk.Label(self.root, text="Log Analyzer", font=("Helvetica", 18))
+        self.label = ttk.Label(self.root, text="Log Analyzer", font=("Helvetica", 18))
         self.label.pack(pady=20)
 
-        self.browse_button = tk.Button(self.root, text="Browse Log File", command=self.browse_file, font=("Helvetica", 12))
+        self.browse_button = ttk.Button(self.root, text="Browse Log File", command=self.browse_file)
         self.browse_button.pack(pady=10)
 
-        self.analyze_button = tk.Button(self.root, text="Analyze Log File", command=self.analyze_logs, font=("Helvetica", 12), state=tk.DISABLED)
+        self.analyze_button = ttk.Button(self.root, text="Analyze Log File", command=self.analyze_logs, state=tk.DISABLED)
         self.analyze_button.pack(pady=10)
 
-        self.report_button = tk.Button(self.root, text="Generate Report", command=self.generate_report, font=("Helvetica", 12), state=tk.DISABLED)
+        self.report_button = ttk.Button(self.root, text="Generate Report", command=self.generate_report, state=tk.DISABLED)
         self.report_button.pack(pady=10)
 
-        self.visualize_button = tk.Button(self.root, text="Visualize Requests", command=self.visualize_requests, font=("Helvetica", 12), state=tk.DISABLED)
+        self.visualize_button = ttk.Button(self.root, text="Visualize Requests", command=self.visualize_requests, state=tk.DISABLED)
         self.visualize_button.pack(pady=10)
 
     def browse_file(self):
@@ -95,6 +102,10 @@ class LogAnalyzerGUI:
 
     def analyze_logs(self):
         """ Analyze the selected log file """
+        threading.Thread(target=self._analyze_logs, daemon=True).start()
+
+    def _analyze_logs(self):
+        """ Analyze logs in a separate thread to keep the UI responsive """
         if self.analyzer.parse_log(self.selected_file):
             messagebox.showinfo("Analysis Complete", "Log file has been analyzed successfully.")
             self.report_button.config(state=tk.NORMAL)
