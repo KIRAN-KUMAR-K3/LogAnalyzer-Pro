@@ -1,13 +1,14 @@
 # LogAnalyzer-Pro
 
-**LogAnalyzer-Pro** is a powerful Python-based tool designed to analyze network log files, detect suspicious activities, and generate detailed reports. The tool features a user-friendly graphical interface, built with `tkinter`, to make it easy for both technical and non-technical users to monitor network traffic, identify potential security issues, and visualize important data.
+**LogAnalyzer-Pro** is an advanced Python-based tool designed to analyze network log files, detect suspicious activities, and generate detailed reports. The tool is equipped with a user-friendly graphical interface built with `tkinter`, making it accessible to both technical and non-technical users. This tool helps in monitoring network traffic, identifying potential security issues, and visualizing key data points like failed login attempts and excessive requests from specific IP addresses.
 
 ### Key Features
-- **Log Parsing**: Efficiently parses log files to extract key information like IP addresses, timestamps, actions, and status codes.
-- **Suspicious Activity Detection**: Automatically identifies suspicious activities, such as failed login attempts, and flags excessive requests from the same IP address.
-- **CSV Report Generation**: Automatically generates CSV reports that summarize suspicious activities for documentation and further analysis.
-- **Data Visualization**: Provides a bar chart visualization of the most active IP addresses based on the number of requests.
-- **Easy-to-Use GUI**: A graphical interface that makes it easy to interact with the tool, load logs, perform analyses, and generate reports.
+- **Multiple Log Format Support**: Supports the parsing of various log formats. The user can select the log format from a dropdown menu, making the tool flexible for different network logs.
+- **Suspicious Activity Detection**: Automatically detects suspicious activities such as failed login attempts and flags excessive requests from the same IP address.
+- **CSV Report Generation**: Easily generates CSV reports summarizing suspicious activities like failed logins, multiple access attempts, and more.
+- **Data Visualization**: Generates a bar chart visualization of the top 10 most active IP addresses based on the number of requests.
+- **Real-Time Progress Updates**: Provides real-time progress updates during log file analysis, including intermediate progress feedback for large log files.
+- **Interactive and Easy-to-Use GUI**: A modern, interactive graphical interface for loading logs, analyzing them, generating reports, and visualizing the results. The UI also displays counts of suspicious entries.
 
 ## Table of Contents
 - [Features](#key-features)
@@ -55,20 +56,26 @@ This will open the **LogAnalyzer-Pro** graphical user interface (GUI) where you 
 ## Usage
 
 ### 1. **Load Log File**
-   - Click the **"Browse Log File"** button to open a file dialog and select the log file you wish to analyze. The tool supports `.log` files with a common access log format.
+   - Click the **"Browse Log File"** button to open a file dialog and select the log file you wish to analyze. The tool supports `.log` files with various common access log formats. You can select the log format from a dropdown menu.
 
-### 2. **Analyze the Logs**
-   - Once the log file is loaded, click the **"Analyze Log File"** button to parse the log data.
-   - The tool will process the log file, extracting key data points like IP addresses, timestamps, actions (e.g., login attempts), and HTTP status codes.
+### 2. **Select Log Format**
+   - Choose the log format that matches your log file from a dropdown menu. The available formats include the default common access log format and other custom formats supported by the tool.
 
-### 3. **Generate Suspicious Activity Report**
+### 3. **Analyze the Logs**
+   - Once the log file is loaded and the log format is selected, click the **"Analyze Log File"** button to parse the log data.
+   - The tool will process the log file, extracting key data points like IP addresses, timestamps, actions (e.g., login attempts), and HTTP status codes. The progress bar will update in real-time, especially for large log files.
+
+### 4. **Generate Suspicious Activity Report**
    - After the log file is successfully analyzed, the **"Generate Report"** button will be enabled.
    - Click **"Generate Report"** to create a **CSV report** containing all suspicious activities (e.g., failed login attempts, IPs with excessive requests).
    - The report will be saved as `suspicious_activity_report.csv`.
 
-### 4. **Visualize IP Request Data**
+### 5. **Visualize IP Request Data**
    - Click the **"Visualize Requests"** button to generate a **bar chart** showing the top 10 IP addresses based on the number of requests they made.
    - The bar chart helps quickly identify the most active IPs and potential misuse of the network.
+
+### 6. **View Suspicious Activity Count**
+   - The tool displays a count of suspicious activities detected, such as the number of failed logins and excessive access attempts, making it easy for users to get a summary of the analysis.
 
 ## Example Output
 
@@ -88,7 +95,7 @@ IP Address, Timestamp, Action, Status Code
 ```
 
 ### Bar Chart Visualization
-The **bar chart** will display the top 10 IPs with the highest number of requests, helping users to easily spot the most active IPs.
+The **bar chart** will display the top 10 IPs with the highest number of requests, helping users easily spot the most active IPs.
 
 ## Contributing
 
