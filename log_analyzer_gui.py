@@ -3,14 +3,40 @@ import re
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import matplotlib.pyplot as plt
-import threading
+from threading import Thread  # Import threading here
 import logging
+import os
+import threading
 
 # Regular expression for parsing logs (assuming common access log format)
 log_format = r'(?P<ip>\d+\.\d+\.\d+\.\d+) - - \[(?P<timestamp>[^\]]+)\] "(?P<action>[^"]+)" (?P<status>\d+)'
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
+
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tooltip = None
+        self.widget.bind("<Enter>", self.show_tooltip)
+        self.widget.bind("<Leave>", self.hide_tooltip)
+
+    def show_tooltip(self, event):
+        x, y, _, _ = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 25
+
+        self.tooltip = tk.Toplevel(self.widget)
+        self.tooltip.wm_overrideredirect(True)
+        self.tooltip.wm_geometry(f"+{x}+{y}")
+
+        label = tk.Label(self.tooltip, text=self.text, background="yellow", relief="solid", borderwidth=1)
+        label.pack()
+
+    def hide_tooltip(self, event):
+        if self.tooltip:
+            self.tooltip.destroy()
 
 class LogAnalyzer:
     def __init__(self):
@@ -67,8 +93,9 @@ class LogAnalyzerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Log Analyzer Tool")
-        self.root.geometry("600x500")
-        
+        self.root.geometry("800x600")
+        self.root.resizable(False, False)
+
         # Log Analyzer instance
         self.analyzer = LogAnalyzer()
 
@@ -77,20 +104,43 @@ class LogAnalyzerGUI:
 
     def create_widgets(self):
         """ Create the UI components """
-        self.label = ttk.Label(self.root, text="Log Analyzer", font=("Helvetica", 18))
-        self.label.pack(pady=20)
+        style = ttk.Style()
+        style.configure('TButton', font=("Helvetica", 12), width=20)
+        style.configure('TLabel', font=("Helvetica", 14))
 
+        # Title
+        self.label = ttk.Label(self.root, text="Log Analyzer", font=("Helvetica", 18, "bold"))
+        self.label.grid(row=0, column=0, padx=20, pady=20)
+
+        # File selection
         self.browse_button = ttk.Button(self.root, text="Browse Log File", command=self.browse_file)
-        self.browse_button.pack(pady=10)
+        self.browse_button.grid(row=1, column=0, padx=20, pady=10)
 
+        # Analyze Button
         self.analyze_button = ttk.Button(self.root, text="Analyze Log File", command=self.analyze_logs, state=tk.DISABLED)
-        self.analyze_button.pack(pady=10)
+        self.analyze_button.grid(row=2, column=0, padx=20, pady=10)
 
+        # Generate Report Button
         self.report_button = ttk.Button(self.root, text="Generate Report", command=self.generate_report, state=tk.DISABLED)
-        self.report_button.pack(pady=10)
+        self.report_button.grid(row=3, column=0, padx=20, pady=10)
 
+        # Visualize Requests Button
         self.visualize_button = ttk.Button(self.root, text="Visualize Requests", command=self.visualize_requests, state=tk.DISABLED)
-        self.visualize_button.pack(pady=10)
+        self.visualize_button.grid(row=4, column=0, padx=20, pady=10)
+
+        # Progress Bar
+        self.progress = ttk.Progressbar(self.root, orient="horizontal", length=300, mode="indeterminate")
+        self.progress.grid(row=5, column=0, padx=20, pady=20)
+
+        # Add Tooltips
+        self.add_tooltips()
+
+    def add_tooltips(self):
+        """ Add tooltips to buttons for better user guidance """
+        ToolTip(self.browse_button, "Browse and select the log file.")
+        ToolTip(self.analyze_button, "Analyze the selected log file for suspicious activity.")
+        ToolTip(self.report_button, "Generate a CSV report of suspicious activity.")
+        ToolTip(self.visualize_button, "Visualize the top 10 IPs by number of requests.")
 
     def browse_file(self):
         """ Open file dialog to select log file """
@@ -102,6 +152,7 @@ class LogAnalyzerGUI:
 
     def analyze_logs(self):
         """ Analyze the selected log file """
+        self.progress.start()
         threading.Thread(target=self._analyze_logs, daemon=True).start()
 
     def _analyze_logs(self):
@@ -112,6 +163,7 @@ class LogAnalyzerGUI:
             self.visualize_button.config(state=tk.NORMAL)
         else:
             messagebox.showerror("Error", "Failed to analyze the log file.")
+        self.progress.stop()
 
     def generate_report(self):
         """ Generate the suspicious activity report """
